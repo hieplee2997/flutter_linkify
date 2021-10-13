@@ -225,6 +225,8 @@ class SelectableLinkify extends StatelessWidget {
   /// Called when the user changes the selection of text (including the cursor location).
   final SelectionChangedCallback? onSelectionChanged;
 
+  final TextSpan? trailing;
+
   const SelectableLinkify({
     Key? key,
     required this.text,
@@ -258,6 +260,7 @@ class SelectableLinkify extends StatelessWidget {
     this.cursorHeight,
     this.selectionControls,
     this.onSelectionChanged,
+    this.trailing
   }) : super(key: key);
 
   @override
@@ -271,6 +274,7 @@ class SelectableLinkify extends StatelessWidget {
     return SelectableText.rich(
       buildTextSpan(
         elements,
+        trailing: trailing,
         style: Theme.of(context).textTheme.bodyText2?.merge(style),
         onOpen: onOpen,
         linkStyle: Theme.of(context)
@@ -326,38 +330,42 @@ class LinkableSpan extends WidgetSpan {
 /// Raw TextSpan builder for more control on the RichText
 TextSpan buildTextSpan(
   List<LinkifyElement> elements, {
+  TextSpan? trailing,
   TextStyle? style,
   TextStyle? linkStyle,
   LinkCallback? onOpen,
   bool useMouseRegion = false,
 }) {
   return TextSpan(
-    children: elements.map<InlineSpan>(
-      (element) {
-        if (element is LinkableElement) {
-          if (useMouseRegion) {
-            return LinkableSpan(
-              mouseCursor: SystemMouseCursors.click,
-              inlineSpan: TextSpan(
+    children: [
+      ...elements.map<InlineSpan>(
+        (element) {
+          if (element is LinkableElement) {
+            if (useMouseRegion) {
+              return LinkableSpan(
+                mouseCursor: SystemMouseCursors.click,
+                inlineSpan: TextSpan(
+                  text: element.text,
+                  style: linkStyle,
+                  recognizer: onOpen != null ? (TapGestureRecognizer()..onTap = () => onOpen(element)) : null,
+                ),
+              );
+            } else {
+              return TextSpan(
                 text: element.text,
                 style: linkStyle,
                 recognizer: onOpen != null ? (TapGestureRecognizer()..onTap = () => onOpen(element)) : null,
-              ),
-            );
+              );
+            }
           } else {
             return TextSpan(
               text: element.text,
-              style: linkStyle,
-              recognizer: onOpen != null ? (TapGestureRecognizer()..onTap = () => onOpen(element)) : null,
+              style: style,
             );
           }
-        } else {
-          return TextSpan(
-            text: element.text,
-            style: style,
-          );
-        }
-      },
-    ).toList(),
+        },
+      ).toList(),
+      if (trailing != null) trailing
+    ]
   );
 }

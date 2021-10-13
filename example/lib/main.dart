@@ -31,6 +31,7 @@ class LinkifyExample extends StatelessWidget {
                 onOpen: _onOpen,
                 textScaleFactor: 4,
                 text: "Made by https://cretezy.com\n\nMail: example@gmail.com",
+                trailing: TextSpan(text: "  edited", style: TextStyle(fontStyle: FontStyle.italic)),
               ),
             ),
           ],
